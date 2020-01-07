@@ -1,55 +1,42 @@
 package geom
 
 import (
-	"math"
 	"math/rand"
 	"testing"
 )
 
 func TestLineHeap(t *testing.T) {
-	var heap lineHeap
+	less := func(i, j int) bool { return i < j }
+	var h heap
 
 	seed := int64(1577816310618750611)
 	rnd := rand.New(rand.NewSource(seed))
 	t.Logf("seed %v", seed)
 
 	check := func() {
-		for i := range heap {
+		for i := range h {
 			childA := 2*i + 1
 			childB := 2*i + 2
 			le := func(i, j int) bool {
-				return heap[i].EndPoint().XY().X <= heap[j].EndPoint().XY().X
+				return i <= j
 			}
-			if childA < len(heap) {
+			if childA < len(h) {
 				if !le(i, childA) {
-					t.Fatal("heap invariant doesn't hold")
+					t.Fatal("h invariant doesn't hold")
 				}
 			}
-			if childB < len(heap) {
+			if childB < len(h) {
 				if !le(i, childB) {
-					t.Fatal("heap invariant doesn't hold")
+					t.Fatal("h invariant doesn't hold")
 				}
 			}
 		}
 	}
 	push := func() {
-		ln, err := NewLineXY(
-			XY{
-				X: math.Round(10 + 90*rnd.Float64()),
-				Y: math.Round(10 + 90*rnd.Float64()),
-			},
-			XY{
-				X: math.Round(10 + 90*rnd.Float64()),
-				Y: math.Round(10 + 90*rnd.Float64()),
-			},
-		)
-		if err != nil {
-			t.Fatalf("could not make line: %v", err)
-		}
-		heap.push(ln)
+		h.push(int(rnd.Int63()), less)
 	}
 	pop := func() {
-		heap.pop()
+		h.pop(less)
 	}
 
 	const n = 100
@@ -68,7 +55,7 @@ func TestLineHeap(t *testing.T) {
 		check()
 	}
 
-	if len(heap) != 0 {
-		t.Fatalf("not empty: %d", len(heap))
+	if len(h) != 0 {
+		t.Fatalf("not empty: %d", len(h))
 	}
 }
